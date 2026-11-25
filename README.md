@@ -364,6 +364,7 @@ These repositories were not treated as proof of an established SBOM or Dependabo
 - `.github/dependabot.yml` — expanded weekly ecosystem, Go module, frontend, Dev Container, Dockerfile and Compose update coverage.
 - `.github/workflows/sbom.yml` — scheduled and event-driven SPDX and CycloneDX source SBOM generation plus Grype vulnerability reporting.
 - `.github/workflows/release.yml` — an additive release job that inventories the core and UI binaries/packages built by the existing release jobs, plus fork-safe RPM signing behavior.
+- `.github/workflows/golang-test-windows.yml` — retries transient Chocolatey feed failures, verifies the Sysinternals PsExec binary is present, and corrects the SYSTEM Go cache paths used by the Windows test job.
 - `.goreleaser.yaml` — explicit BuildKit SBOM attestations for every `dockers_v2` container image definition.
 
 No dependency versions in `go.mod` or `go.sum` are changed by this documentation and automation enhancement.
