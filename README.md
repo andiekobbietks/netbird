@@ -309,9 +309,9 @@ The existing upstream Dependabot configuration was reviewed and extended rather 
 | Go modules | Root module and `client/internal/metrics/infra/ingest` | Tracks dependencies in both discovered Go modules |
 | npm | `client/ui/frontend`, `proxy/web` | Tracks pnpm/npm lockfiles and frontend dependencies |
 | Dev Containers | `.devcontainer` configuration | Tracks Dev Container Features |
-| Docker | `.devcontainer`, `client`, `client/internal/metrics/infra/ingest`, `client/ui/build/docker`, `combined`, `e2e/harness`, `management`, `proxy`, `relay`, `signal`, `upload-server` | Tracks base-image references in discovered Dockerfile directories |
+| Docker | `.devcontainer`, `client`, `client/internal/metrics/infra/ingest`, `client/ui/build/docker`, `combined`, `e2e/harness`, `management`, `proxy`, `relay`, `signal`, `upload-server` | Tracks supported image references in discovered Dockerfile directories |
 
-Updates are grouped to reduce pull-request noise, with bounded open pull requests and retained upstream compatibility exceptions. The configuration follows the repository's discovered manifests: two Go modules, two JavaScript frontend lockfiles (pnpm and npm), and the Dockerfile directories present in the source tree. It does not invent ecosystems or nested modules that are not present.
+Updates are grouped to reduce pull-request noise, with bounded open pull requests and retained upstream compatibility exceptions. Dependabot’s Docker support has important limits: it may only update the first `FROM` directive and does not fully support multi-stage Docker builds or image references supplied through `ARG`. Review all Dockerfiles and build arguments manually, and treat the SBOM/vulnerability reports as a complementary control, not proof that every base image is current. See the [Dependabot Docker limitations](https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/manage-your-dependency-security/configure-private-registries#notes). The configuration follows the repository's discovered manifests: two Go modules, two JavaScript frontend lockfiles (pnpm and npm), and the Dockerfile directories present in the source tree. It does not invent ecosystems or nested modules that are not present.
 
 **What Dependabot does:** checks supported manifests and lockfiles for newer dependency versions and opens pull requests. It does not automatically prove that an update is safe, compatible, vulnerability-free, or ready to merge. CI tests, code review, release notes and security review remain necessary.
 
@@ -325,9 +325,9 @@ The workflow `.github/workflows/sbom.yml` uses Anchore Syft through the pinned `
 
 - **SPDX JSON** — `netbird.spdx.json`
 - **CycloneDX JSON** — `netbird.cyclonedx.json`
-- **Grype SARIF** — `grype.sarif`, a vulnerability scan report generated from the SPDX SBOM
+- **Grype SARIF** — `grype.sarif` and `grype-release.sarif`, vulnerability scan reports generated from the source and release-artifact SPDX SBOMs
 
-The source workflow runs on pushes to `main` and `release-*`, pull requests targeting those branches, manual dispatch, and a weekly schedule. Source SBOMs and the Grype SARIF vulnerability report are uploaded as a commit-specific artifact. The release workflow generates a second artifact for the built core and UI binaries/packages. Both artifact sets are retained for 90 days.
+The source workflow runs on pushes to `main` and `release-*`, pull requests targeting those branches, manual dispatch, and a weekly schedule. Source SBOMs and the Grype SARIF vulnerability report are uploaded as a commit-specific artifact. The release workflow generates a second artifact for the built core and UI binaries/packages and scans that inventory with Grype as well. Both artifact sets are retained for 90 days.
 
 The generated files are workflow artifacts, not committed snapshots. This avoids stale SBOM files being mistaken for the current source inventory. Download the artifact from the relevant workflow run and retain it with the corresponding commit or release evidence.
 
@@ -362,6 +362,7 @@ These repositories were not treated as proof of an established SBOM or Dependabo
 ### Files introduced or extended
 
 - `.github/dependabot.yml` — expanded ecosystem and Docker build-context coverage.
+- `.github/dependabot.yml` — weekly update coverage for discovered dependency ecosystems and Dockerfile directories.
 - `.github/workflows/sbom.yml` — scheduled and event-driven SPDX and CycloneDX source SBOM generation plus Grype vulnerability reporting.
 - `.github/workflows/release.yml` — an additive release job that inventories the core and UI binaries/packages built by the existing release jobs.
 
