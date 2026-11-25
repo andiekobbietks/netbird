@@ -97,8 +97,10 @@ nfpms:
       - xdg-utils
 
     rpm:
+      {{ if index .Env "GPG_RPM_KEY_FILE" }}
       signature:
-        key_file: '{{ if index .Env "GPG_RPM_KEY_FILE" }}{{ .Env.GPG_RPM_KEY_FILE }}{{ end }}'
+        key_file: '{{ .Env.GPG_RPM_KEY_FILE }}'
+      {{ end }}
 
 # The amd64 UI job shares project_name, so the default checksum file name would
 # collide with it on the shared GitHub release.
