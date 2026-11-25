@@ -72,8 +72,8 @@ updates:
         patterns:
           - "*"
     ignore:
-      # Chainguard publishes a rolling latest tag for this free image.
-      - dependency-name: "cgr.dev/chainguard/static"
+      # Preserve the existing upstream exception for the distroless base image.
+      - dependency-name: "gcr.io/distroless/base"
       # Preserve upstream Go major/minor policy; patch updates remain eligible.
       - dependency-name: "golang"
         update-types:
