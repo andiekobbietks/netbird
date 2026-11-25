@@ -133,8 +133,10 @@ nfpms:
       - xdg-utils
 
     rpm:
+      {{ if index .Env "GPG_RPM_KEY_FILE" }}
       signature:
-        key_file: '{{ if index .Env "GPG_RPM_KEY_FILE" }}{{ .Env.GPG_RPM_KEY_FILE }}{{ end }}'
+        key_file: '{{ .Env.GPG_RPM_KEY_FILE }}'
+      {{ end }}
 
 uploads:
   - name: debian
