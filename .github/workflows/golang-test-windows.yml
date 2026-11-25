@@ -85,7 +85,7 @@ jobs:
       - name: Configure Go environment as SYSTEM
         shell: pwsh
         run: |
-          $go = "C:\hostedtoolcache\windows\go${{ steps.go.outputs.go-version }}\x64\bin\go.exe"
+          $go = "C:\hostedtoolcache\windows\go\${{ steps.go.outputs.go-version }}\x64\bin\go.exe"
           & "$env:PSEXEC_PATH" -accepteula -s -w "${{ github.workspace }}" $go env -w GOMODCACHE="${{ env.modcache }}"
           if ($LASTEXITCODE -ne 0) { throw "Failed to configure GOMODCACHE" }
           & "$env:PSEXEC_PATH" -accepteula -s -w "${{ github.workspace }}" $go env -w GOCACHE="${{ env.cache }}"
