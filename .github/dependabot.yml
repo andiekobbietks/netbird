@@ -1,29 +1,29 @@
 version: 2
 updates:
+  # Keep GitHub Actions current, including actions used by CI and security workflows.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 5
     groups:
       actions:
         patterns:
           - "*"
     ignore:
-      # git-town/action v1.3.x crashes on cyclic PR graphs (self-loop main->main
-      # fork PRs) via its topological-sort visualization. Pinned to v1.2.1 in
-      # git-town.yml; block v1.3.x until upstream tolerates cyclic edges.
+      # Retain the upstream compatibility exception until the cyclic-PR issue is resolved.
       - dependency-name: "git-town/action"
         update-types:
           - "version-update:semver-minor"
           - "version-update:semver-major"
 
+  # NetBird is a Go monorepo with its primary module at the repository root.
   - package-ecosystem: "gomod"
     directories:
       - "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 15
+    open-pull-requests-limit: 20
     groups:
       golang-x-packages:
         patterns:
@@ -47,23 +47,34 @@ updates:
         patterns:
           - "golang.zx2c4.com/wireguard*"
 
-  # Base images of the source-build Dockerfiles, pinned by digest (Chainguard
-  # publishes only :latest for free). Dockerfile.release files feed goreleaser
-  # and keep the published images as they are, so their bases are left alone.
+  # Track Dev Container feature and image references.
+  - package-ecosystem: "devcontainers"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  # Cover every verified first-party Docker build context in this repository.
   - package-ecosystem: "docker"
     directories:
+      - "/client"
+      - "/combined"
+      - "/management"
+      - "/proxy"
+      - "/relay"
+      - "/signal"
       - "/upload-server"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 15
     groups:
       base-images:
         patterns:
           - "*"
     ignore:
-      - dependency-name: "gcr.io/distroless/base"
-      # Go minor and major versions move with the rest of the repository;
-      # patch releases and new digests of the pinned tag still come through.
+      # Chainguard publishes a rolling latest tag for this free image.
+      - dependency-name: "cgr.dev/chainguard/static"
+      # Preserve upstream Go major/minor policy; patch updates remain eligible.
       - dependency-name: "golang"
         update-types:
           - "version-update:semver-minor"
