@@ -315,7 +315,7 @@ Updates are grouped to reduce pull-request noise, with bounded open pull request
 
 **What Dependabot does:** checks supported manifests and lockfiles for newer dependency versions and opens pull requests. It does not automatically prove that an update is safe, compatible, vulnerability-free, or ready to merge. CI tests, code review, release notes and security review remain necessary.
 
-The SBOM workflow also runs Grype against the generated SPDX inventory and retains a SARIF vulnerability report with the SBOMs. The scan is initially report-only (fail-build: false) so inherited upstream findings can be triaged before a blocking policy is introduced. It is not a substitute for enabling GitHub native dependency alerts and security updates.
+The SBOM workflow also runs Grype against the generated SPDX inventory and retains a SARIF vulnerability report with the SBOMs. On trusted non-PR runs, the source and release SARIF reports are additionally uploaded to GitHub Code Scanning under separate categories, so findings can be reviewed alongside repository security alerts; pull-request runs retain the SARIF as artifacts without requesting elevated code-scanning permissions. The scan is initially report-only (fail-build: false) so inherited upstream findings can be triaged before a blocking policy is introduced. It is not a substitute for enabling GitHub native dependency alerts and security updates.
 
 Dependabot version updates are also distinct from Dependabot security alerts and security updates. Repository owners should enable dependency graph, Dependabot alerts and Dependabot security updates in GitHub repository settings where available. Those settings are not enabled merely by committing `.github/dependabot.yml`.
 
@@ -325,7 +325,7 @@ The workflow `.github/workflows/sbom.yml` uses Anchore Syft through the pinned `
 
 - **SPDX JSON** — `netbird.spdx.json`
 - **CycloneDX JSON** — `netbird.cyclonedx.json`
-- **Grype SARIF** — `grype.sarif` and `grype-release.sarif`, vulnerability scan reports generated from the source and release-artifact SPDX SBOMs
+- **Grype SARIF** — `grype.sarif` and `grype-release.sarif`, vulnerability scan reports generated from the source and release-artifact SPDX SBOMs and uploaded to Code Scanning on trusted non-PR runs
 
 The source workflow runs on pushes to `main` and `release-*`, pull requests targeting those branches, manual dispatch, and a weekly schedule. Source SBOMs and the Grype SARIF vulnerability report are uploaded as a commit-specific artifact. The release workflow generates a second artifact for the built core and UI binaries/packages and scans that inventory with Grype as well. Container image definitions also request BuildKit SBOM attestations through GoReleaser; these attestations travel with the OCI image manifest/index rather than being represented as an unrelated source-tree artifact. Both workflow artifact sets are retained for 90 days.
 
