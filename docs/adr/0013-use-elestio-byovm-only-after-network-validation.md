@@ -62,3 +62,12 @@ The preferred initial sizing target is 2 vCPU, 4 GB RAM and 40 GB disk, subject 
 The official Elestio BYOVM documentation states one free BYOVM service is available within 2 vCPU / 4 GB RAM / 80 GB disk. NetBird's current quickstart documents a 1 CPU / 2 GB minimum and TCP 443 / UDP 3478 reachability. NetBird's external reverse-proxy documentation explicitly requires direct UDP STUN access and HTTP/2 gRPC/WebSocket routing.
 
 The repository guide records the implementation and validation checklist. **No live Elestio BYOVM instance, external UDP test, proxy route test or production deployment has been completed as part of this ADR.** The decision remains Proposed until those tests pass.
+
+
+## CI/CD controls
+
+The fork adds `.github/workflows/elestio-validation.yml` for static documentation, local-link and workflow-YAML checks. This is not a live infrastructure test and does not validate public UDP 3478, gRPC, WebSocket routing or peer connectivity.
+
+The optional `.github/workflows/elestio-deploy.yml` is a manual, `main`-only, environment-protected action. It requires successful validation for the exact commit and explicit operator confirmation, then asks Elestio to restart an existing CI/CD pipeline. It does not provision a BYOVM VM, create a paid pipeline target, change firewall/DNS/proxy configuration, or prove service health. A direct BYOVM attachment without an Elestio CI/CD pipeline is outside this workflow.
+
+These controls improve repeatability but do not change the production go/no-go rule: the external proxy and direct UDP tests must pass before the control plane is used for IVF.
