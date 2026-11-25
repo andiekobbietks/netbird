@@ -396,6 +396,7 @@ nfpms:
 dockers_v2:
    - id: netbird
      disable: "{{ .Env.SKIP_DOCKER_PUSH }}"
+     sbom: true
      ids:
        - netbird
      images:
@@ -420,6 +421,7 @@ dockers_v2:
        "maintainer": "dev@netbird.io"
    - id: netbird-rootless
      disable: "{{ .Env.SKIP_DOCKER_PUSH }}"
+     sbom: true
      ids:
        - netbird
      images:
@@ -444,6 +446,7 @@ dockers_v2:
        "maintainer": "dev@netbird.io"
    - id: netbird-rootless-ubi
      disable: "{{ .Env.SKIP_DOCKER_PUSH }}"
+     sbom: true
      ids:
        - netbird
      images:
@@ -481,6 +484,7 @@ dockers_v2:
        "maintainer": "dev@netbird.io"
    - id: relay
      disable: "{{ .Env.SKIP_DOCKER_PUSH }}"
+     sbom: true
      ids:
        - netbird-relay
      images:
@@ -503,6 +507,7 @@ dockers_v2:
        "maintainer": "dev@netbird.io"
    - id: relay-ubi
      disable: "{{ .Env.SKIP_DOCKER_PUSH }}"
+     sbom: true
      ids:
        - netbird-relay
      images:
@@ -538,6 +543,7 @@ dockers_v2:
        "maintainer": "dev@netbird.io"
    - id: signal
      disable: "{{ .Env.SKIP_DOCKER_PUSH }}"
+     sbom: true
      ids:
        - netbird-signal
      images:
@@ -560,6 +566,7 @@ dockers_v2:
        "maintainer": "dev@netbird.io"
    - id: signal-ubi
      disable: "{{ .Env.SKIP_DOCKER_PUSH }}"
+     sbom: true
      ids:
        - netbird-signal
      images:
@@ -595,6 +602,7 @@ dockers_v2:
        "maintainer": "dev@netbird.io"
    - id: management
      disable: "{{ .Env.SKIP_DOCKER_PUSH }}"
+     sbom: true
      ids:
        - netbird-mgmt
      images:
@@ -617,6 +625,7 @@ dockers_v2:
        "maintainer": "dev@netbird.io"
    - id: management-ubi
      disable: "{{ .Env.SKIP_DOCKER_PUSH }}"
+     sbom: true
      ids:
        - netbird-mgmt
      images:
@@ -652,6 +661,7 @@ dockers_v2:
        "maintainer": "dev@netbird.io"
    - id: upload
      disable: "{{ .Env.SKIP_DOCKER_PUSH }}"
+     sbom: true
      ids:
        - netbird-upload
      images:
@@ -674,6 +684,7 @@ dockers_v2:
        "maintainer": "dev@netbird.io"
    - id: netbird-server
      disable: "{{ .Env.SKIP_DOCKER_PUSH }}"
+     sbom: true
      ids:
        - netbird-server
      images:
@@ -696,6 +707,7 @@ dockers_v2:
        "maintainer": "dev@netbird.io"
    - id: netbird-server-ubi
      disable: "{{ .Env.SKIP_DOCKER_PUSH }}"
+     sbom: true
      ids:
        - netbird-server
      images:
@@ -731,6 +743,7 @@ dockers_v2:
        "maintainer": "dev@netbird.io"
    - id: netbird-proxy
      disable: "{{ .Env.SKIP_DOCKER_PUSH }}"
+     sbom: true
      ids:
        - netbird-proxy
      images:
@@ -753,6 +766,7 @@ dockers_v2:
        "maintainer": "dev@netbird.io"
    - id: nblink
      disable: "{{ .Env.SKIP_DOCKER_PUSH }}"
+     sbom: true
      ids:
        - nblink
      images:
@@ -775,6 +789,7 @@ dockers_v2:
        "maintainer": "dev@netbird.io"
    - id: proxy-ubi
      disable: "{{ .Env.SKIP_DOCKER_PUSH }}"
+     sbom: true
      ids:
        - netbird-proxy
      images:
