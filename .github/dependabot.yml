@@ -57,6 +57,7 @@ updates:
   # Cover every verified first-party Docker build context in this repository.
   - package-ecosystem: "docker"
     directories:
+      - "/.devcontainer"
       - "/client"
       - "/combined"
       - "/management"
