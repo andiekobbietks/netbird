@@ -335,7 +335,7 @@ The generated files are workflow artifacts, not committed snapshots. This avoids
 
 A Software Bill of Materials is a structured inventory of identified components and dependency metadata. It supports supply-chain transparency, licence review, vulnerability triage and incident response.
 
-The source workflow creates a **source-tree SBOM**, while the release workflow creates an inventory of the core and UI binaries/packages produced by its build jobs. These are separate inventories with different scopes. In addition, every GoReleaser `dockers_v2` image definition explicitly enables BuildKit SBOM attestations (`sbom: true`). Buildx attaches the generated SBOM attestation to the image manifest/index so it can be retrieved and verified against the immutable image digest. This covers the NetBird, rootless, UBI, relay, signal, management, upload, server, proxy and nblink image variants when those images are actually built and published. A fork's CI must not push to upstream NetBird registries or use upstream signing secrets; its release workflow therefore skips publishing and safely skips RPM signing when the fork has no signing key. The OCI SBOM attestation is inventory evidence, not by itself a vulnerability scan or signature. Host operating-system packages, external SaaS services, dynamically downloaded components and customer-specific deployment layers still require deployment-specific assessment.
+The source workflow creates a **source-tree SBOM**, while the release workflow creates an inventory of the core and UI binaries/packages produced by its build jobs. These are separate inventories with different scopes. In addition, all 15 GoReleaser `dockers_v2` image definitions explicitly enable BuildKit SBOM attestations (`sbom: true`). Buildx attaches the generated SBOM attestation to the image manifest/index so it can be retrieved and verified against the immutable image digest. This covers the NetBird, rootless, UBI, relay, signal, management, upload, server, proxy and nblink image variants when those images are actually built and published. A fork's CI must not push to upstream NetBird registries or use upstream signing secrets; its release workflow therefore skips publishing and safely skips RPM signing when the fork has no signing key. The OCI SBOM attestation is inventory evidence, not by itself a vulnerability scan or signature. Host operating-system packages, external SaaS services, dynamically downloaded components and customer-specific deployment layers still require deployment-specific assessment.
 
 An SBOM is not a vulnerability scan, penetration test, provenance attestation, signature, or guarantee that the software is secure. A clean SBOM does not mean that a component has no known vulnerabilities.
 
@@ -361,8 +361,7 @@ These repositories were not treated as proof of an established SBOM or Dependabo
 
 ### Files introduced or extended
 
-- `.github/dependabot.yml` — expanded ecosystem and Docker build-context coverage.
-- `.github/dependabot.yml` — weekly update coverage for discovered dependency ecosystems and Dockerfile directories.
+- `.github/dependabot.yml` — expanded weekly ecosystem, Go module, frontend, Dev Container, Dockerfile and Compose update coverage.
 - `.github/workflows/sbom.yml` — scheduled and event-driven SPDX and CycloneDX source SBOM generation plus Grype vulnerability reporting.
 - `.github/workflows/release.yml` — an additive release job that inventories the core and UI binaries/packages built by the existing release jobs, plus fork-safe RPM signing behavior.
 - `.goreleaser.yaml` — explicit BuildKit SBOM attestations for every `dockers_v2` container image definition.
