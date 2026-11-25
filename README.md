@@ -306,13 +306,16 @@ The existing upstream Dependabot configuration was reviewed and extended rather 
 | Ecosystem | Coverage | Why it matters |
 | --- | --- | --- |
 | GitHub Actions | Workflow action references | Keeps CI and automation dependencies maintained |
-| Go modules | Root Go module and its dependency graph | Tracks direct and transitive Go module updates through Go's module tooling |
+| Go modules | Root module and `client/internal/metrics/infra/ingest` | Tracks dependencies in both discovered Go modules |
+| npm | `client/ui/frontend`, `proxy/web` | Tracks pnpm/npm lockfiles and frontend dependencies |
 | Dev Containers | `.devcontainer` configuration | Tracks Dev Container Features |
-| Docker | `.devcontainer`, `client`, `combined`, `management`, `proxy`, `relay`, `signal`, `upload-server` | Tracks base-image references in verified Docker build contexts |
+| Docker | `.devcontainer`, `client`, `client/internal/metrics/infra/ingest`, `client/ui/build/docker`, `combined`, `e2e/harness`, `management`, `proxy`, `relay`, `signal`, `upload-server` | Tracks base-image references in discovered Dockerfile directories |
 
-Updates are grouped to reduce pull-request noise, with bounded open pull requests and retained upstream compatibility exceptions. The Go module is rooted at the repository root; the configuration does not invent nested Go modules that are not present.
+Updates are grouped to reduce pull-request noise, with bounded open pull requests and retained upstream compatibility exceptions. The configuration follows the repository's discovered manifests: two Go modules, two JavaScript frontend lockfiles (pnpm and npm), and the Dockerfile directories present in the source tree. It does not invent ecosystems or nested modules that are not present.
 
 **What Dependabot does:** checks supported manifests and lockfiles for newer dependency versions and opens pull requests. It does not automatically prove that an update is safe, compatible, vulnerability-free, or ready to merge. CI tests, code review, release notes and security review remain necessary.
+
+A separate GitHub Dependency Review workflow checks pull-request dependency changes and fails when a newly introduced dependency is rated high severity or above. This is a change-focused gate, not a scan of every existing dependency.
 
 Dependabot version updates are also distinct from Dependabot security alerts and security updates. Repository owners should enable dependency graph, Dependabot alerts and Dependabot security updates in GitHub repository settings where available. Those settings are not enabled merely by committing `.github/dependabot.yml`.
 
@@ -359,5 +362,6 @@ These repositories were not treated as proof of an established SBOM or Dependabo
 
 - `.github/dependabot.yml` — expanded ecosystem and Docker build-context coverage.
 - `.github/workflows/sbom.yml` — scheduled and event-driven SPDX and CycloneDX source SBOM generation.
+- `.github/workflows/dependency-review.yml` — pull-request dependency review gate for high-severity-or-higher advisories.
 
 No dependency versions in `go.mod` or `go.sum` are changed by this documentation and automation enhancement.
