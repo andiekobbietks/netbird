@@ -153,7 +153,32 @@ The documented manual pipeline then requires SSH access to the target and config
 
 If using Elestio's **Import Third-Party Git Repository** dashboard feature or a custom `elestio.yml` template, verify that the import method supports all Compose files, scripts, persistent mounts, environment files, and UDP port declarations. The Elestio template format supports UDP host and container protocols, but the exact service's public network path must still be tested.
 
-## 5. Repository deployment workflow
+## 5. GitHub Actions CI/CD guardrails
+
+This fork adds two deliberately separate workflows:
+
+- **CI — `.github/workflows/elestio-validation.yml`:** runs on relevant pull requests and pushes. It checks that the README links to this guide, ADR-0013 is indexed, the deployment caveats remain present, and both workflow files parse as YAML. It is a documentation/configuration check; it does not test a live VM, UDP reachability, gRPC/WebSocket routing, or NetBird peer connectivity.
+- **CD — `.github/workflows/elestio-deploy.yml`:** manual only, restricted to the default `main` branch, and requires an explicit confirmation input. It checks for a successful Elestio validation run on the exact same commit, authenticates with the Elestio CLI, inspects the configured service, and requests a restart of an existing Elestio CI/CD pipeline.
+
+### Enable the manual CD workflow
+
+Only configure this if a separately provisioned Elestio CI/CD target and a tested NetBird Compose pipeline already exist. It is not needed to attach a free BYOVM VM through the dashboard, and it does not create a BYOVM service or pipeline.
+
+1. In GitHub, create an environment named `elestio-production`.
+2. Add required reviewers / deployment protection to that environment.
+3. Add these environment secrets; never commit them:
+   - `ELESTIO_EMAIL`
+   - `ELESTIO_API_TOKEN`
+   - `ELESTIO_VM_ID`
+   - `ELESTIO_PIPELINE_ID`
+4. Confirm that the pipeline's stored configuration points to the intended, reviewed deployment source and branch. Confirm that the host proxy and direct UDP 3478 path have passed the production tests in section 7.
+5. From the Actions tab, run **Elestio BYOVM Pipeline Redeploy** on `main` and tick the confirmation input.
+
+The CD workflow only requests a restart/rebuild of the existing pipeline using its Elestio-side configuration. It does not create infrastructure, change DNS or firewall rules, configure the NetBird proxy, or prove that the resulting VPN is healthy. Review the Elestio pipeline history/logs and repeat the external TCP 443, gRPC/WebSocket, UDP 3478 and peer-connectivity tests before declaring the service healthy. The Elestio CI/CD target may be separately billed; this workflow does not turn it into the free BYOVM management allowance.
+
+If the project is using BYOVM attachment only (without an Elestio CI/CD pipeline), continue to use the BYOVM dashboard/CLI inspection steps and the approved manual Compose deployment process. Do not create a paid CI/CD target solely to make this workflow run.
+
+## 6. Repository deployment workflow
 
 The deployment should be reproducible and pinned to a reviewed commit.
 
@@ -176,7 +201,7 @@ The deployment should be reproducible and pinned to a reviewed commit.
 
 The current upstream quickstart is useful for understanding the generated configuration, but do not pipe a remote script directly into Bash in production without inspecting and pinning the script revision first.
 
-## 6. DNS and certificate plan
+## 7. DNS and certificate plan
 
 Choose a dedicated hostname such as `vpn.ivf.org.uk` (subject to IVF domain-owner approval).
 
@@ -188,7 +213,7 @@ Choose a dedicated hostname such as `vpn.ivf.org.uk` (subject to IVF domain-owne
 
 Do not assume a default `*.vm.elestio.app` application URL is suitable for the VPN control plane. Use a stable domain and verify certificate, gRPC and UDP behaviour.
 
-## 7. Validation gates — all required before production
+## 8. Validation gates — all required before production
 
 ### Infrastructure and ownership
 - [ ] VM is within 2 vCPU / 4 GB / 80 GB free BYOVM limits.
@@ -218,7 +243,7 @@ Do not assume a default `*.vm.elestio.app` application URL is suitable for the V
 ### Go/no-go rule
 If Elestio cannot confirm the host proxy and UDP path, **do not deploy the NetBird control plane on that BYOVM host**. Use a separate qualifying VM where NetBird can own TCP 443 and UDP 3478, or select another host. Never weaken the firewall or disable TLS to force the deployment through.
 
-## 8. Relevant documentation and quoted requirements
+## 9. Relevant documentation and quoted requirements
 
 The short quotations below are from the linked primary documentation. The links are the authoritative source for details and may change.
 
@@ -249,7 +274,7 @@ The short quotations below are from the linked primary documentation. The links 
 8. **Elestio — service deployment FAQ:** [Services & Deployment](https://docs.elest.io/frequently-asked-questions/services-faq/)  
    Explains that a CI/CD target can host multiple software projects on one VM and describes the separate BYOVM management model.
 
-## 9. Decision record
+## 10. Decision record
 
 This guide implements the proposed decision for a low-volume IVF private mesh VPN:
 
@@ -257,7 +282,7 @@ This guide implements the proposed decision for a low-volume IVF private mesh VP
 - **Initial sizing:** 2 vCPU / 4 GB RAM / 40 GB disk.
 - **Server architecture:** current combined NetBird server, embedded IdP, dashboard, persistent storage.
 - **Network:** direct public UDP 3478 and a correctly configured TCP 443 reverse-proxy route.
-- **Deployment method:** BYOVM attachment through Elestio dashboard; use Elestio CLI for inspection/management and a manual Compose pipeline only if a separately priced CI/CD target is intentionally selected.
+- **Deployment method:** BYOVM attachment through the Elestio dashboard; use the CLI for inspection/management. The optional GitHub Actions CD workflow only restarts an already configured, separately billed Compose pipeline after explicit approval.
 - **Status:** conditional GO; no production deployment until the proxy/UDP tests and cost checks pass.
 
 Related fork ADRs: [ADR index](docs/adr/README.md). This file is operational guidance and does not supersede the ADRs or upstream NetBird documentation.
