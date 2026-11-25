@@ -317,6 +317,8 @@ Updates are grouped to reduce pull-request noise, with bounded open pull request
 
 The SBOM workflow also runs Grype against the generated SPDX inventory and retains a SARIF vulnerability report with the SBOMs. On trusted non-PR runs, the source and release SARIF reports are additionally uploaded to GitHub Code Scanning under separate categories, so findings can be reviewed alongside repository security alerts; pull-request runs retain the SARIF as artifacts without requesting elevated code-scanning permissions. The scan is initially report-only (fail-build: false) so inherited upstream findings can be triaged before a blocking policy is introduced. It is not a substitute for enabling GitHub native dependency alerts and security updates.
 
+Every pull request also runs `.github/workflows/dependency-review.yml`, pinned to the reviewed `actions/dependency-review-action` v5.0.0 commit. It rejects newly introduced dependencies with known vulnerabilities at **low severity or higher**. The workflow uses read-only repository permissions and does not expose publishing or signing secrets to pull-request code. This gate prevents new vulnerable dependencies from entering through updates; it does not erase inherited findings from the existing baseline. Those remain visible in Grype reports until the affected dependency or artifact is remediated.
+
 Dependabot version updates are also distinct from Dependabot security alerts and security updates. Repository owners should enable dependency graph, Dependabot alerts and Dependabot security updates in GitHub repository settings where available. Those settings are not enabled merely by committing `.github/dependabot.yml`.
 
 ### SBOM generation
@@ -363,8 +365,9 @@ These repositories were not treated as proof of an established SBOM or Dependabo
 
 - `.github/dependabot.yml` — expanded weekly ecosystem, Go module, frontend, Dev Container, Dockerfile and Compose update coverage.
 - `.github/workflows/sbom.yml` — scheduled and event-driven SPDX and CycloneDX source SBOM generation plus Grype vulnerability reporting.
+- `.github/workflows/dependency-review.yml` — read-only PR gate for newly introduced vulnerable dependencies, using a full-SHA-pinned action.
 - `.github/workflows/release.yml` — an additive release job that inventories the core and UI binaries/packages built by the existing release jobs, plus fork-safe RPM signing behavior.
 - `.github/workflows/golang-test-windows.yml` — retries transient Chocolatey feed failures, verifies the Sysinternals PsExec binary is present, and corrects the SYSTEM Go cache paths used by the Windows test job.
-- `.goreleaser.yaml` — explicit BuildKit SBOM attestations for every `dockers_v2` container image definition.
+- `.goreleaser.yaml` and `.goreleaser_ui*.yaml` — explicit BuildKit SBOM attestations for container images and fork-safe conditional RPM signing for core and UI packages.
 
 No dependency versions in `go.mod` or `go.sum` are changed by this documentation and automation enhancement.
