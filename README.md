@@ -315,7 +315,7 @@ Updates are grouped to reduce pull-request noise, with bounded open pull request
 
 **What Dependabot does:** checks supported manifests and lockfiles for newer dependency versions and opens pull requests. It does not automatically prove that an update is safe, compatible, vulnerability-free, or ready to merge. CI tests, code review, release notes and security review remain necessary.
 
-A separate GitHub Dependency Review workflow checks pull-request dependency changes and fails when a newly introduced dependency is rated high severity or above. This is a change-focused gate, not a scan of every existing dependency.
+The SBOM workflow also runs Grype against the generated SPDX inventory and retains a SARIF vulnerability report with the SBOMs. The scan is initially report-only (fail-build: false) so inherited upstream findings can be triaged before a blocking policy is introduced. It is not a substitute for enabling GitHub native dependency alerts and security updates.
 
 Dependabot version updates are also distinct from Dependabot security alerts and security updates. Repository owners should enable dependency graph, Dependabot alerts and Dependabot security updates in GitHub repository settings where available. Those settings are not enabled merely by committing `.github/dependabot.yml`.
 
@@ -325,8 +325,9 @@ The workflow `.github/workflows/sbom.yml` uses Anchore Syft through the pinned `
 
 - **SPDX JSON** — `netbird.spdx.json`
 - **CycloneDX JSON** — `netbird.cyclonedx.json`
+- **Grype SARIF** — `grype.sarif`, a vulnerability scan report generated from the SPDX SBOM
 
-It runs on pushes to `main` and `release-*`, pull requests targeting those branches, manual dispatch, and a weekly schedule. Both files are uploaded as a versioned GitHub Actions artifact named with the commit SHA and retained for 90 days.
+It runs on pushes to `main` and `release-*`, pull requests targeting those branches, manual dispatch, and a weekly schedule. Both SBOMs and the Grype SARIF vulnerability report are uploaded as a commit-specific GitHub Actions artifact and retained for 90 days.
 
 The generated files are workflow artifacts, not committed snapshots. This avoids stale SBOM files being mistaken for the current source inventory. Download the artifact from the relevant workflow run and retain it with the corresponding commit or release evidence.
 
@@ -362,6 +363,5 @@ These repositories were not treated as proof of an established SBOM or Dependabo
 
 - `.github/dependabot.yml` — expanded ecosystem and Docker build-context coverage.
 - `.github/workflows/sbom.yml` — scheduled and event-driven SPDX and CycloneDX source SBOM generation.
-- `.github/workflows/dependency-review.yml` — pull-request dependency review gate for high-severity-or-higher advisories.
 
 No dependency versions in `go.mod` or `go.sum` are changed by this documentation and automation enhancement.
