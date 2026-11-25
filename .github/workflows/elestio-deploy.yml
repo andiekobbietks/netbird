@@ -1,0 +1,72 @@
+name: Elestio BYOVM Pipeline Redeploy
+
+# Deliberately manual: this restarts an already-created Elestio CI/CD pipeline.
+# It does not provision a BYOVM host or bypass the UDP/proxy production gates.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_deploy:
+        description: "Confirm that the approved Elestio pipeline may be rebuilt/redeployed"
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: elestio-production-redeploy
+  cancel-in-progress: false
+
+jobs:
+  redeploy:
+    name: Redeploy approved Elestio Compose pipeline
+    if: github.ref == 'refs/heads/main' && inputs.confirm_deploy == true
+    runs-on: ubuntu-latest
+    environment: elestio-production
+    steps:
+      - name: Checkout reviewed main commit
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Require successful Elestio validation for this exact commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh run list --workflow elestio-validation.yml --branch main \
+            --json headSha,conclusion --limit 20 > /tmp/elestio-validation-runs.json
+          jq -e --arg sha "$GITHUB_SHA" \
+            'any(.[]; .headSha == $sha and .conclusion == "success")' \
+            /tmp/elestio-validation-runs.json >/dev/null
+
+      - name: Install Elestio CLI
+        run: |
+          set -euo pipefail
+          npm install --global elestio
+          elestio --version
+
+      - name: Authenticate and restart the existing pipeline
+        env:
+          ELESTIO_EMAIL: ${{ secrets.ELESTIO_EMAIL }}
+          ELESTIO_API_TOKEN: ${{ secrets.ELESTIO_API_TOKEN }}
+          ELESTIO_VM_ID: ${{ secrets.ELESTIO_VM_ID }}
+          ELESTIO_PIPELINE_ID: ${{ secrets.ELESTIO_PIPELINE_ID }}
+        run: |
+          set -euo pipefail
+          for name in ELESTIO_EMAIL ELESTIO_API_TOKEN ELESTIO_VM_ID ELESTIO_PIPELINE_ID; do
+            if [[ -z "${!name:-}" ]]; then
+              echo "::error::Missing required GitHub environment secret: $name"
+              exit 1
+            fi
+          done
+
+          elestio login --email "$ELESTIO_EMAIL" --token "$ELESTIO_API_TOKEN"
+          elestio auth test
+          elestio whoami
+          elestio service "$ELESTIO_VM_ID"
+          elestio cicd pipeline-restart "$ELESTIO_VM_ID" "$ELESTIO_PIPELINE_ID"
+
+          echo "Elestio pipeline restart requested. Inspect the pipeline history and logs in Elestio before declaring deployment healthy."
