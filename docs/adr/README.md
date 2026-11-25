@@ -29,6 +29,7 @@ The records follow the lightweight, one-decision-per-document approach described
 | [0009](0009-use-a-single-maintenance-integration-branch.md) | Integrate maintenance changes on a dedicated branch | Proposed |
 | [0010](0010-retain-machine-readable-security-evidence.md) | Retain machine-readable security evidence | Proposed |
 | [0011](0011-progressively-enforce-vulnerability-gates.md) | Progressively enforce vulnerability gates | Proposed |\n| [0012](0012-keep-fork-validation-separate-from-upstream-release-publishing.md) | Keep fork validation separate from upstream release publishing | Proposed |
+| [0013](0013-use-elestio-byovm-only-after-network-validation.md) | Use Elestio BYOVM only after direct UDP and proxy validation | Proposed |
 
 ## Template
 
