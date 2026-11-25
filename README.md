@@ -188,5 +188,108 @@ This repository is licensed under the BSD-3-Clause license, which applies to all
 Those directories are licensed under the GNU Affero General Public License version 3.0 (AGPLv3). See the respective LICENSE files inside each directory.
 
 _WireGuard_ and the _WireGuard_ logo are [registered trademarks](https://www.wireguard.com/trademark-policy/) of Jason A. Donenfeld.
- 
+
+---
+
+## Irene Vera Foundation: proposed private-access deployment
+
+> **Project status: planning and documentation only.** This section records a proposed use of NetBird Community Edition for the Irene Vera Foundation (IVF). It does not mean that a VPN server has been provisioned, endpoints enrolled, access policies applied, or the Foundation's website secured by this repository.
+
+### Purpose
+
+The Irene Vera Foundation is a UK charitable organisation. Its staff and authorised technical maintainers may need to administer systems from different locations and devices. NetBird can provide an encrypted, identity-aware private network for approved devices, so that access to internal administration services does not depend on exposing those services directly to the public internet.
+
+The intended outcome is a Foundation-controlled remote-access layer with documented ownership, least-privilege access, device lifecycle management, and a clear separation between public services and internal administration.
+
+- Foundation website: https://ireneverafoundation.com/
+- Upstream project: https://github.com/netbirdio/netbird
+- Upstream documentation: https://docs.netbird.io/
+
+### Why this matters to the Foundation
+
+Without a centrally managed private-access layer, remote administration can become fragmented across individual VPN configurations, changing IP allowlists, direct SSH exposure, shared credentials, and separate firewall exceptions. Those arrangements can be difficult to review consistently when staff, contractors, devices, or responsibilities change.
+
+If an administration interface or server management port is exposed publicly without adequate controls, it may receive unsolicited connection attempts and face a larger attack surface. This is a general risk statement, not a claim that the Foundation's current website or infrastructure has been tested or found vulnerable.
+
+A correctly designed NetBird deployment can reduce the need to expose selected internal services publicly. It can centralise peer identity and access policy, encrypt traffic between enrolled peers, and make it easier to revoke a device or user's network access. It does not, by itself, secure an application or replace the controls described below.
+
+### What NetBird would and would not protect
+
+| Foundation asset or service | Intended treatment |
+| --- | --- |
+| Public charity website | Keep publicly reachable over HTTPS. NetBird is not a prerequisite for visitors and must not inadvertently place the public site behind a VPN. |
+| Website administration | Restrict to authorised maintainers; use NetBird only if the hosting and application architecture support a private administrative path. Retain strong application authentication and MFA. |
+| Deployment interfaces and private dashboards | Prefer private access through approved NetBird peers, where technically supported. |
+| SSH and server management | Do not expose broadly to the internet. Permit only named administrator groups and required destinations; retain key-based authentication and server hardening. |
+| Staff and contractor devices | Enrol only approved, supported devices. Apply role-based policies and remove access promptly when a person or device no longer requires it. |
+| Beneficiary, volunteer, staff, or other sensitive information | Apply data minimisation, application-level authorisation, encryption, retention controls, and the Foundation's safeguarding and data-protection procedures. A VPN is not a substitute for these controls. |
+
+### Proposed architecture
+
+The proposed design is a self-hosted NetBird Community Edition control plane on Foundation-controlled infrastructure, subject to an infrastructure and cost review.
+
+1. **Control plane:** NetBird management, signal, and relay services hosted on a Foundation-owned Linux VM or other supported deployment target. The deployment method and resource sizing must be validated against the current upstream self-hosting documentation.
+2. **Identity:** Integrate an approved identity provider where supported. Require MFA for user sign-in and use individual identities rather than shared accounts.
+3. **Peers:** Enrol Foundation-approved Windows, macOS, and Linux devices, plus mobile devices only where there is a defined operational need and suitable device controls.
+4. **Access policy:** Create explicit groups and narrowly scoped rules. Do not grant every enrolled peer unrestricted access to every other peer.
+5. **Private services:** Route only the required internal administration and management traffic. Keep public website traffic and public-facing services outside the private overlay unless a separate, reviewed design explicitly requires otherwise.
+6. **Operations:** Maintain documented ownership, backups, upgrades, monitoring, recovery procedures, access reviews, and an emergency revocation process.
+
+Illustrative access groups, to be confirmed with the Foundation:
+
+- **IVF Administrators:** control-plane administration and approved infrastructure management.
+- **Technical Operations:** only the systems and ports required for assigned operational duties.
+- **Website Maintainers:** website administration and deployment endpoints, not general infrastructure access by default.
+- **Staff:** only approved internal services required for their role.
+- **Development / Contractors:** time-limited, task-specific access to explicitly named resources.
+- **Guests:** no access by default; create exceptions only for a documented purpose and expiry date.
+
+These are proposed policy groups, not groups that currently exist in the Foundation's identity provider or NetBird account.
+
+### Security and safeguarding principles
+
+- **Least privilege:** define access by person, device, destination, protocol, and business need. Avoid broad all-to-all rules.
+- **Strong identity:** use individual accounts, MFA, and an approved identity provider where feasible. Protect administrator recovery methods.
+- **Device trust:** maintain an inventory of enrolled devices, their owners, operating systems, and approval status. Remove lost, retired, compromised, or out-of-scope devices promptly.
+- **Foundation ownership:** the Foundation should own the hosting subscription, DNS, domain, administrative identities, backups, and recovery material. Access should not depend on one volunteer's personal account.
+- **Separation of duties:** distinguish control-plane administrators from ordinary users and from website maintainers.
+- **Data protection:** do not route or store sensitive beneficiary or vulnerable-person data on personal devices merely because a VPN is available. Apply the Foundation's data-protection, safeguarding, and retention policies at the application and device layers.
+- **Audit and review:** record administrative changes and review membership and policies regularly. Confirm which logging capabilities are available in the selected Community Edition release and deployment.
+- **Incident response:** document how to disable a user, revoke a peer, rotate credentials, isolate a compromised host, restore the control plane, and notify the appropriate Foundation lead.
+- **Secure operations:** patch the host and containers, protect secrets, restrict management ports, back up configuration and required state, test restores, and monitor service health.
+
+### Hosting, licensing, and cost
+
+NetBird Community Edition is open-source software, but self-hosting is not automatically cost-free. The Foundation should budget for the VM or hosting platform, public IP and DNS, storage, bandwidth, backups, monitoring, maintenance time, and incident response.
+
+The upstream repository uses more than one licence. Its root licence is BSD-3-Clause, while the `management/`, `signal/`, and `relay/` directories are licensed under AGPLv3, with their own licence files. Other components may have their own notices. Anyone modifying, redistributing, or offering the software as a service must review the applicable licence files and comply with the obligations for the specific components and use case. Do not assume that every file in this repository is covered by one licence.
+
+This repository is a public fork of the upstream project. It is not a private Foundation repository and should not contain Foundation secrets, credentials, private configuration, personal data, production inventories, or sensitive operational details. Keep deployment secrets and environment-specific configuration outside Git, in an appropriately controlled secrets store.
+
+### Delivery plan and acceptance checks
+
+1. **Discovery:** confirm the Foundation's hosting subscription, available VM capacity, DNS ownership, identity provider, endpoint inventory, data flows, and services that genuinely require private access.
+2. **Design approval:** agree the threat model, user groups, access matrix, administrator ownership, backup approach, support responsibility, and operating budget with the Foundation.
+3. **Pilot:** deploy a non-production instance on Foundation-controlled infrastructure; enrol a small number of approved test devices; validate direct connectivity and relay fallback.
+4. **Policy validation:** test both allowed and denied access paths. Confirm that staff and contractor peers cannot reach administrative services outside their role.
+5. **Operational readiness:** test account removal, device revocation, credential rotation, backup restoration, upgrade, and control-plane recovery.
+6. **Controlled rollout:** migrate approved users and services in stages, with a rollback plan and named operational owner.
+7. **Review:** periodically recertify access, remove unused peers and rules, review logs, and reassess hosting costs and security requirements.
+
+The deployment should not be considered production-ready until the Foundation has approved the design, verified the access controls, tested recovery, and assigned ongoing operational ownership.
+
+### Current boundary and project status
+
+This documentation does **not** assert that NetBird is currently deployed for IVF. It does not assert that the Foundation's public website is behind a VPN, that the website is vulnerable, or that any existing Azure resource is suitable for this workload. No production endpoint, domain, secret, tenant identifier, beneficiary information, or private network configuration should be committed here.
+
+The public website should remain available to the public. NetBird is intended to protect selected private administration and infrastructure paths, not to replace public web hosting, HTTPS, a web application firewall or CDN, secure application authentication, patching, backups, monitoring, or safeguarding controls.
+
+### Upstream project and maintenance
+
+This fork builds on the work of the NetBird project and its contributors. Keep upstream copyright notices, licence files, third-party notices, and component-specific licences intact. Review upstream releases and security advisories before updating this fork. Record local changes separately and avoid modifying upstream application code when Foundation-specific deployment documentation or configuration is sufficient.
+
+- Upstream source: https://github.com/netbirdio/netbird
+- Self-hosting documentation: https://docs.netbird.io/selfhosted/selfhosted-quickstart
+- NetBird architecture: https://docs.netbird.io/about-netbird/how-netbird-works
+- NetBird security documentation: https://docs.netbird.io/
 
