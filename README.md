@@ -307,8 +307,8 @@ The existing upstream Dependabot configuration was reviewed and extended rather 
 | --- | --- | --- |
 | GitHub Actions | Workflow action references | Keeps CI and automation dependencies maintained |
 | Go modules | Root Go module and its dependency graph | Tracks direct and transitive Go module updates through Go's module tooling |
-| Dev Containers | `.devcontainer` configuration | Tracks Dev Container features and image references |
-| Docker | `client`, `combined`, `management`, `proxy`, `relay`, `signal`, `upload-server` | Tracks base-image references in verified Docker build contexts |
+| Dev Containers | `.devcontainer` configuration | Tracks Dev Container Features |
+| Docker | `.devcontainer`, `client`, `combined`, `management`, `proxy`, `relay`, `signal`, `upload-server` | Tracks base-image references in verified Docker build contexts |
 
 Updates are grouped to reduce pull-request noise, with bounded open pull requests and retained upstream compatibility exceptions. The Go module is rooted at the repository root; the configuration does not invent nested Go modules that are not present.
 
