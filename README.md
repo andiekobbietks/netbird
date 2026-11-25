@@ -293,3 +293,71 @@ This fork builds on the work of the NetBird project and its contributors. Keep u
 - NetBird architecture: https://docs.netbird.io/about-netbird/how-netbird-works
 - NetBird security documentation: https://docs.netbird.io/
 
+---
+
+## Supply-chain security: Dependabot and SBOM automation
+
+This fork adds repository-level dependency maintenance and repeatable software inventory generation while retaining NetBird's upstream application code and existing CI workflows.
+
+### Dependabot coverage
+
+The existing upstream Dependabot configuration was reviewed and extended rather than replaced. It now schedules weekly updates for:
+
+| Ecosystem | Coverage | Why it matters |
+| --- | --- | --- |
+| GitHub Actions | Workflow action references | Keeps CI and automation dependencies maintained |
+| Go modules | Root Go module and its dependency graph | Tracks direct and transitive Go module updates through Go's module tooling |
+| Dev Containers | `.devcontainer` configuration | Tracks Dev Container features and image references |
+| Docker | `client`, `combined`, `management`, `proxy`, `relay`, `signal`, `upload-server` | Tracks base-image references in verified Docker build contexts |
+
+Updates are grouped to reduce pull-request noise, with bounded open pull requests and retained upstream compatibility exceptions. The Go module is rooted at the repository root; the configuration does not invent nested Go modules that are not present.
+
+**What Dependabot does:** checks supported manifests and lockfiles for newer dependency versions and opens pull requests. It does not automatically prove that an update is safe, compatible, vulnerability-free, or ready to merge. CI tests, code review, release notes and security review remain necessary.
+
+Dependabot version updates are also distinct from Dependabot security alerts and security updates. Repository owners should enable dependency graph, Dependabot alerts and Dependabot security updates in GitHub repository settings where available. Those settings are not enabled merely by committing `.github/dependabot.yml`.
+
+### SBOM generation
+
+The workflow `.github/workflows/sbom.yml` uses Anchore Syft through the pinned `anchore/sbom-action` release to inventory the repository source and produce two machine-readable formats:
+
+- **SPDX JSON** — `netbird.spdx.json`
+- **CycloneDX JSON** — `netbird.cyclonedx.json`
+
+It runs on pushes to `main` and `release-*`, pull requests targeting those branches, manual dispatch, and a weekly schedule. Both files are uploaded as a versioned GitHub Actions artifact named with the commit SHA and retained for 90 days.
+
+The generated files are workflow artifacts, not committed snapshots. This avoids stale SBOM files being mistaken for the current source inventory. Download the artifact from the relevant workflow run and retain it with the corresponding commit or release evidence.
+
+### What an SBOM does and does not mean
+
+A Software Bill of Materials is a structured inventory of identified components and dependency metadata. It supports supply-chain transparency, licence review, vulnerability triage and incident response.
+
+This workflow creates a **source-tree SBOM**. It does not claim to be a complete inventory of every deployed runtime image, host operating-system package, external SaaS service, dynamically downloaded component, or customer-specific deployment. Production release assurance should additionally generate and retain SBOMs for each exact built container image and binary artifact, ideally identified by immutable digest, and compare those inventories against vulnerability intelligence.
+
+An SBOM is not a vulnerability scan, penetration test, provenance attestation, signature, or guarantee that the software is secure. A clean SBOM does not mean that a component has no known vulnerabilities.
+
+### Recommended operating process
+
+1. Review each Dependabot pull request and its changelog.
+2. Run the relevant tests, build and licence checks before merging.
+3. Prioritise security updates based on severity, reachability, exploitability and exposure.
+4. Download and retain the SBOM artifact associated with the exact commit or release.
+5. Compare SBOM components with vulnerability advisories and investigate affected versions.
+6. Generate separate SBOMs for release binaries and container images before production deployment.
+7. Keep dependency alerts, CI results, SBOM artifacts, release provenance and deployment records together as an auditable evidence trail.
+
+### Inspiration and engineering references from this account
+
+The repository's existing structure remains the primary source of truth. During this enhancement, related repositories in the account were inspected for reusable engineering patterns:
+
+- `andiekobbietks/oss-enterprise`: an open-source programme learning resource; its useful lesson is to treat governance and contributor knowledge as durable repository documentation.
+- `andiekobbietks/DevOpsEngine`: a Rust infrastructure-engineering project with a lockfile, tests and contribution guidance; its useful lesson is to preserve reproducible dependency state and explicit contribution practices.
+- `andiekobbietks/device-networking-hub`: a networking-oriented application scaffold; it is contextual inspiration, not a security or supply-chain benchmark.
+
+These repositories were not treated as proof of an established SBOM or Dependabot implementation. The automation here is based on the actual NetBird manifests and workflows, with pinned action references and generated evidence.
+
+### Files introduced or extended
+
+- `.github/dependabot.yml` — expanded ecosystem and Docker build-context coverage.
+- `.github/workflows/sbom.yml` — scheduled and event-driven SPDX and CycloneDX source SBOM generation.
+
+No dependency versions in `go.mod` or `go.sum` are changed by this documentation and automation enhancement.
