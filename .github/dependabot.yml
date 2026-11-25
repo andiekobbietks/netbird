@@ -73,6 +73,7 @@ updates:
     directories:
       - "/.devcontainer"
       - "/client"
+      - "/client/internal/metrics/infra"
       - "/client/internal/metrics/infra/ingest"
       - "/client/ui/build/docker"
       - "/combined"
