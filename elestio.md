@@ -171,7 +171,7 @@ Only configure this if a separately provisioned Elestio CI/CD target and a teste
    - `ELESTIO_API_TOKEN`
    - `ELESTIO_VM_ID`
    - `ELESTIO_PIPELINE_ID`
-4. Confirm that the pipeline's stored configuration points to the intended, reviewed deployment source and branch. Confirm that the host proxy and direct UDP 3478 path have passed the production tests in section 7.
+4. Confirm that the pipeline's stored configuration points to the intended, reviewed deployment source and branch. Confirm that the host proxy and direct UDP 3478 path have passed the production tests in section 8.
 5. From the Actions tab, run **Elestio BYOVM Pipeline Redeploy** on `main` and tick the confirmation input.
 
 The CD workflow only requests a restart/rebuild of the existing pipeline using its Elestio-side configuration. It does not create infrastructure, change DNS or firewall rules, configure the NetBird proxy, or prove that the resulting VPN is healthy. Review the Elestio pipeline history/logs and repeat the external TCP 443, gRPC/WebSocket, UDP 3478 and peer-connectivity tests before declaring the service healthy. The Elestio CI/CD target may be separately billed; this workflow does not turn it into the free BYOVM management allowance.
