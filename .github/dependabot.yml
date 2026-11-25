@@ -24,8 +24,26 @@ updates:
       - "/client/internal/metrics/infra/ingest"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 20
+    open-pull-requests-limit: 30
     groups:
+      grype-klauspost-compress:
+        patterns:
+          - "github.com/klauspost/compress"
+      grype-crowdsec:
+        patterns:
+          - "github.com/crowdsecurity/crowdsec"
+      grype-docker-engine:
+        patterns:
+          - "github.com/docker/docker"
+      grype-azure-ntlmssp:
+        patterns:
+          - "github.com/Azure/go-ntlmssp"
+      grype-aws-sdk:
+        patterns:
+          - "github.com/aws/aws-sdk-go-v2"
+      grype-gobwas-websocket:
+        patterns:
+          - "github.com/gobwas/ws"
       golang-x-packages:
         patterns:
           - "golang.org/x/*"
