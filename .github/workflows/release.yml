@@ -301,8 +301,17 @@ jobs:
         env:
           GPG_RPM_PRIVATE_KEY: ${{ secrets.GPG_RPM_PRIVATE_KEY }}
         run: |
-          echo "$GPG_RPM_PRIVATE_KEY" | base64 -d > /tmp/gpg-rpm-signing-key.asc
-          echo "GPG_RPM_KEY_FILE=/tmp/gpg-rpm-signing-key.asc" >> $GITHUB_ENV
+          set -euo pipefail
+          if [[ -z "${GPG_RPM_PRIVATE_KEY:-}" ]]; then
+            echo "No RPM signing key is configured for this fork/CI context; skip signing."
+            exit 0
+          fi
+          printf '%s' "$GPG_RPM_PRIVATE_KEY" | base64 --decode > /tmp/gpg-rpm-signing-key.asc
+          if ! grep -q "BEGIN PGP PRIVATE KEY BLOCK" /tmp/gpg-rpm-signing-key.asc; then
+            echo "Configured RPM signing secret is not an ASCII-armoured private key." >&2
+            exit 1
+          fi
+          echo "GPG_RPM_KEY_FILE=/tmp/gpg-rpm-signing-key.asc" >> "$GITHUB_ENV"
 
       - name: Install goversioninfo
         run: go install github.com/josephspurrier/goversioninfo/cmd/goversioninfo@b66839b # v1.7.0
@@ -548,8 +557,17 @@ jobs:
         env:
           GPG_RPM_PRIVATE_KEY: ${{ secrets.GPG_RPM_PRIVATE_KEY }}
         run: |
-          echo "$GPG_RPM_PRIVATE_KEY" | base64 -d > /tmp/gpg-rpm-signing-key.asc
-          echo "GPG_RPM_KEY_FILE=/tmp/gpg-rpm-signing-key.asc" >> $GITHUB_ENV
+          set -euo pipefail
+          if [[ -z "${GPG_RPM_PRIVATE_KEY:-}" ]]; then
+            echo "No RPM signing key is configured for this fork/CI context; skip signing."
+            exit 0
+          fi
+          printf '%s' "$GPG_RPM_PRIVATE_KEY" | base64 --decode > /tmp/gpg-rpm-signing-key.asc
+          if ! grep -q "BEGIN PGP PRIVATE KEY BLOCK" /tmp/gpg-rpm-signing-key.asc; then
+            echo "Configured RPM signing secret is not an ASCII-armoured private key." >&2
+            exit 1
+          fi
+          echo "GPG_RPM_KEY_FILE=/tmp/gpg-rpm-signing-key.asc" >> "$GITHUB_ENV"
 
       - name: Install LLVM-MinGW for ARM64 cross-compilation
         run: |
@@ -710,8 +728,17 @@ jobs:
         env:
           GPG_RPM_PRIVATE_KEY: ${{ secrets.GPG_RPM_PRIVATE_KEY }}
         run: |
-          echo "$GPG_RPM_PRIVATE_KEY" | base64 -d > /tmp/gpg-rpm-signing-key.asc
-          echo "GPG_RPM_KEY_FILE=/tmp/gpg-rpm-signing-key.asc" >> $GITHUB_ENV
+          set -euo pipefail
+          if [[ -z "${GPG_RPM_PRIVATE_KEY:-}" ]]; then
+            echo "No RPM signing key is configured for this fork/CI context; skip signing."
+            exit 0
+          fi
+          printf '%s' "$GPG_RPM_PRIVATE_KEY" | base64 --decode > /tmp/gpg-rpm-signing-key.asc
+          if ! grep -q "BEGIN PGP PRIVATE KEY BLOCK" /tmp/gpg-rpm-signing-key.asc; then
+            echo "Configured RPM signing secret is not an ASCII-armoured private key." >&2
+            exit 1
+          fi
+          echo "GPG_RPM_KEY_FILE=/tmp/gpg-rpm-signing-key.asc" >> "$GITHUB_ENV"
 
       - name: Install wails3 CLI
         # Version derived from go.mod so the binding generator always matches
@@ -833,8 +860,17 @@ jobs:
         env:
           GPG_RPM_PRIVATE_KEY: ${{ secrets.GPG_RPM_PRIVATE_KEY }}
         run: |
-          echo "$GPG_RPM_PRIVATE_KEY" | base64 -d > /tmp/gpg-rpm-signing-key.asc
-          echo "GPG_RPM_KEY_FILE=/tmp/gpg-rpm-signing-key.asc" >> $GITHUB_ENV
+          set -euo pipefail
+          if [[ -z "${GPG_RPM_PRIVATE_KEY:-}" ]]; then
+            echo "No RPM signing key is configured for this fork/CI context; skip signing."
+            exit 0
+          fi
+          printf '%s' "$GPG_RPM_PRIVATE_KEY" | base64 --decode > /tmp/gpg-rpm-signing-key.asc
+          if ! grep -q "BEGIN PGP PRIVATE KEY BLOCK" /tmp/gpg-rpm-signing-key.asc; then
+            echo "Configured RPM signing secret is not an ASCII-armoured private key." >&2
+            exit 1
+          fi
+          echo "GPG_RPM_KEY_FILE=/tmp/gpg-rpm-signing-key.asc" >> "$GITHUB_ENV"
 
       - name: Install wails3 CLI
         # Version derived from go.mod so the binding generator always matches
