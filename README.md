@@ -297,7 +297,7 @@ This fork builds on the work of the NetBird project and its contributors. Keep u
 
 ## Supply-chain security: Dependabot and SBOM automation
 
-This fork adds repository-level dependency maintenance and repeatable software inventory generation while retaining NetBird's upstream application code and existing CI workflows.
+This fork adds repository-level dependency maintenance and repeatable source and release-artifact software inventories while retaining NetBird's upstream application code and existing CI workflows.
 
 ### Dependabot coverage
 
@@ -321,13 +321,13 @@ Dependabot version updates are also distinct from Dependabot security alerts and
 
 ### SBOM generation
 
-The workflow `.github/workflows/sbom.yml` uses Anchore Syft through the pinned `anchore/sbom-action` release to inventory the repository source and produce two machine-readable formats:
+The workflow `.github/workflows/sbom.yml` uses Anchore Syft through the pinned `anchore/sbom-action` release to inventory the repository source. The existing release workflow also downloads its core and UI build artifacts and generates a separate inventory for the resulting binaries and packages. Both produce SPDX and CycloneDX machine-readable formats:
 
 - **SPDX JSON** — `netbird.spdx.json`
 - **CycloneDX JSON** — `netbird.cyclonedx.json`
 - **Grype SARIF** — `grype.sarif`, a vulnerability scan report generated from the SPDX SBOM
 
-It runs on pushes to `main` and `release-*`, pull requests targeting those branches, manual dispatch, and a weekly schedule. Both SBOMs and the Grype SARIF vulnerability report are uploaded as a commit-specific GitHub Actions artifact and retained for 90 days.
+The source workflow runs on pushes to `main` and `release-*`, pull requests targeting those branches, manual dispatch, and a weekly schedule. Source SBOMs and the Grype SARIF vulnerability report are uploaded as a commit-specific artifact. The release workflow generates a second artifact for the built core and UI binaries/packages. Both artifact sets are retained for 90 days.
 
 The generated files are workflow artifacts, not committed snapshots. This avoids stale SBOM files being mistaken for the current source inventory. Download the artifact from the relevant workflow run and retain it with the corresponding commit or release evidence.
 
@@ -335,7 +335,7 @@ The generated files are workflow artifacts, not committed snapshots. This avoids
 
 A Software Bill of Materials is a structured inventory of identified components and dependency metadata. It supports supply-chain transparency, licence review, vulnerability triage and incident response.
 
-This workflow creates a **source-tree SBOM**. It does not claim to be a complete inventory of every deployed runtime image, host operating-system package, external SaaS service, dynamically downloaded component, or customer-specific deployment. Production release assurance should additionally generate and retain SBOMs for each exact built container image and binary artifact, ideally identified by immutable digest, and compare those inventories against vulnerability intelligence.
+The source workflow creates a **source-tree SBOM**, while the release workflow creates an inventory of the core and UI binaries/packages produced by its build jobs. These are separate inventories with different scopes. Container images are not yet individually inventoried by immutable image digest; production release assurance must add those image SBOMs and cover host operating-system packages, external SaaS services, dynamically downloaded components, and customer-specific deployment layers where applicable.
 
 An SBOM is not a vulnerability scan, penetration test, provenance attestation, signature, or guarantee that the software is secure. A clean SBOM does not mean that a component has no known vulnerabilities.
 
@@ -346,7 +346,7 @@ An SBOM is not a vulnerability scan, penetration test, provenance attestation, s
 3. Prioritise security updates based on severity, reachability, exploitability and exposure.
 4. Download and retain the SBOM artifact associated with the exact commit or release.
 5. Compare SBOM components with vulnerability advisories and investigate affected versions.
-6. Generate separate SBOMs for release binaries and container images before production deployment.
+6. Retain the release binary/package SBOM and add per-image SBOMs keyed to immutable container digests before production deployment.
 7. Keep dependency alerts, CI results, SBOM artifacts, release provenance and deployment records together as an auditable evidence trail.
 
 ### Inspiration and engineering references from this account
@@ -362,6 +362,7 @@ These repositories were not treated as proof of an established SBOM or Dependabo
 ### Files introduced or extended
 
 - `.github/dependabot.yml` — expanded ecosystem and Docker build-context coverage.
-- `.github/workflows/sbom.yml` — scheduled and event-driven SPDX and CycloneDX source SBOM generation.
+- `.github/workflows/sbom.yml` — scheduled and event-driven SPDX and CycloneDX source SBOM generation plus Grype vulnerability reporting.
+- `.github/workflows/release.yml` — an additive release job that inventories the core and UI binaries/packages built by the existing release jobs.
 
 No dependency versions in `go.mod` or `go.sum` are changed by this documentation and automation enhancement.
