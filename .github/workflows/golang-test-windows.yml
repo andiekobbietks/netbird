@@ -19,12 +19,12 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
       - name: Install Go
-        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
         id: go
         with:
           go-version-file: "go.mod"
@@ -36,7 +36,7 @@ jobs:
           echo "modcache=$(go env GOMODCACHE)" >> $env:GITHUB_ENV
 
       - name: Cache Go modules
-        uses: actions/cache@2c8a9bd7457de244a408f35966fab2fb45fda9c8 # v6.0.0
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             ${{ env.cache }}
@@ -59,40 +59,12 @@ jobs:
 
       - run: mv ${{ env.downloadPath }}/wintun/bin/amd64/wintun.dll 'C:\Windows\System32\'
 
-      - name: Install Windows test prerequisites
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = "Stop"
-          foreach ($package in @("sysinternals", "mingw")) {
-            $installed = $false
-            for ($attempt = 1; $attempt -le 3; $attempt++) {
-              Write-Host "Installing $package (attempt $attempt/3)"
-              choco install -y $package --ignore-checksums --execution-timeout=1800
-              if ($LASTEXITCODE -eq 0) {
-                $installed = $true
-                break
-              }
-              if ($attempt -lt 3) { Start-Sleep -Seconds (15 * $attempt) }
-            }
-            if (-not $installed) { throw "Chocolatey could not install $package after three attempts" }
-          }
-          $psexec = Get-ChildItem -Path "$env:ChocolateyInstall\lib\sysinternals" -Filter "PsExec64.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-          if (-not $psexec) { $psexec = Get-Command "PsExec64.exe" -ErrorAction SilentlyContinue }
-          if (-not $psexec) { throw "PsExec64.exe was not installed by the Sysinternals package" }
-          $psexecPath = if ($psexec -is [System.IO.FileInfo]) { $psexec.FullName } else { $psexec.Source }
-          "PSEXEC_PATH=$psexecPath" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+      - run: choco install -y sysinternals --ignore-checksums
+      - run: choco install -y mingw
 
-      - name: Configure Go environment as SYSTEM
-        shell: pwsh
-        run: |
-          $go = "C:\hostedtoolcache\windows\go\${{ steps.go.outputs.go-version }}\x64\bin\go.exe"
-          & "$env:PSEXEC_PATH" -accepteula -s -w "${{ github.workspace }}" $go env -w GOMODCACHE="${{ env.modcache }}"
-          if ($LASTEXITCODE -ne 0) { throw "Failed to configure GOMODCACHE" }
-          & "$env:PSEXEC_PATH" -accepteula -s -w "${{ github.workspace }}" $go env -w GOCACHE="${{ env.cache }}"
-          if ($LASTEXITCODE -ne 0) { throw "Failed to configure GOCACHE" }
-          & "$env:PSEXEC_PATH" -accepteula -s -w "${{ github.workspace }}" $go mod tidy
-          if ($LASTEXITCODE -ne 0) { throw "go mod tidy failed" }
-
+      - run: PsExec64 -s -w ${{ github.workspace }} C:\hostedtoolcache\windows\go\${{ steps.go.outputs.go-version }}\x64\bin\go.exe env -w GOMODCACHE=${{ env.cache }}
+      - run: PsExec64 -s -w ${{ github.workspace }} C:\hostedtoolcache\windows\go\${{ steps.go.outputs.go-version }}\x64\bin\go.exe env -w GOCACHE=${{ env.modcache }}
+      - run: PsExec64 -s -w ${{ github.workspace }} C:\hostedtoolcache\windows\go\${{ steps.go.outputs.go-version }}\x64\bin\go.exe mod tidy
       - name: Generate test script
         # Exclude the client/ui package itself: its main.go uses //go:embed
         # all:frontend/dist, which fails to compile until the frontend has been
