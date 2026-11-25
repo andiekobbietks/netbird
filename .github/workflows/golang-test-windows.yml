@@ -79,15 +79,16 @@ jobs:
           $psexec = Get-ChildItem -Path "$env:ChocolateyInstall\lib\sysinternals" -Filter "PsExec64.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
           if (-not $psexec) { $psexec = Get-Command "PsExec64.exe" -ErrorAction SilentlyContinue }
           if (-not $psexec) { throw "PsExec64.exe was not installed by the Sysinternals package" }
-          "PSEXEC_PATH=$($psexec.Source)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          $psexecPath = if ($psexec -is [System.IO.FileInfo]) { $psexec.FullName } else { $psexec.Source }
+          "PSEXEC_PATH=$psexecPath" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
       - name: Configure Go environment as SYSTEM
         shell: pwsh
         run: |
           $go = "C:\hostedtoolcache\windows\go${{ steps.go.outputs.go-version }}\x64\bin\go.exe"
-          & "$env:PSEXEC_PATH" -accepteula -s -w "${{ github.workspace }}" $go env -w GOMODCACHE="${{ env.cache }}"
+          & "$env:PSEXEC_PATH" -accepteula -s -w "${{ github.workspace }}" $go env -w GOMODCACHE="${{ env.modcache }}"
           if ($LASTEXITCODE -ne 0) { throw "Failed to configure GOMODCACHE" }
-          & "$env:PSEXEC_PATH" -accepteula -s -w "${{ github.workspace }}" $go env -w GOCACHE="${{ env.modcache }}"
+          & "$env:PSEXEC_PATH" -accepteula -s -w "${{ github.workspace }}" $go env -w GOCACHE="${{ env.cache }}"
           if ($LASTEXITCODE -ne 0) { throw "Failed to configure GOCACHE" }
           & "$env:PSEXEC_PATH" -accepteula -s -w "${{ github.workspace }}" $go mod tidy
           if ($LASTEXITCODE -ne 0) { throw "go mod tidy failed" }
