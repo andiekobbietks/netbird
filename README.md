@@ -58,6 +58,8 @@ The fork's architecture and supply-chain maintenance decisions are documented in
 
 See the **[Elestio BYOVM deployment guide](elestio.md)** for the free-tier eligibility assessment, VM sizing, firewall and UDP requirements, reverse-proxy constraints, CLI workflow, import options, and production validation checklist.
 
+The guide's [Elestio validation CI](.github/workflows/elestio-validation.yml) checks its documentation and workflow syntax. The [manual Elestio pipeline redeploy workflow](.github/workflows/elestio-deploy.yml) is gated to `main`, same-commit CI success, GitHub environment approval, and Elestio secrets; it does not provision or auto-deploy BYOVM.
+
 ### Self-host NetBird (video)
 
 [![Watch the video](https://img.youtube.com/vi/bZAgpT6nzaQ/0.jpg)](https://youtu.be/bZAgpT6nzaQ)
