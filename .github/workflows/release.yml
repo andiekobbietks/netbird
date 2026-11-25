@@ -1270,12 +1270,23 @@ jobs:
           upload-artifact: false
           upload-release-assets: false
 
-      - name: Upload release artifact SBOMs
+      - name: Scan release artifact SBOM for known vulnerabilities
+        uses: anchore/scan-action@11983a512817154c80a9db660c1a184be7513ed6 # v7.4.3
+        with:
+          sbom: release-sbom/netbird-release.spdx.json
+          output-format: sarif
+          output-file: release-sbom/grype-release.sarif
+          severity-cutoff: high
+          fail-build: false
+          cache-db: true
+
+      - name: Upload release artifact SBOMs and vulnerability report
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: netbird-release-sboms-${{ github.sha }}
           path: |
             release-sbom/netbird-release.spdx.json
             release-sbom/netbird-release.cyclonedx.json
+            release-sbom/grype-release.sarif
           if-no-files-found: error
           retention-days: 90
