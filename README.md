@@ -50,6 +50,10 @@
 
 https://github.com/user-attachments/assets/10cec749-bb56-4ab3-97af-4e38850108d2
 
+### Architecture decision records
+
+The fork's architecture and supply-chain maintenance decisions are documented in the [ADR index](docs/adr/README.md). Each record captures its context, decision, alternatives, consequences and validation evidence.
+
 ### Self-host NetBird (video)
 
 [![Watch the video](https://img.youtube.com/vi/bZAgpT6nzaQ/0.jpg)](https://youtu.be/bZAgpT6nzaQ)
