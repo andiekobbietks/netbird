@@ -1,0 +1,59 @@
+name: Software Bill of Materials
+
+on:
+  push:
+    branches: [main, "release-*"]
+  pull_request:
+    branches: [main, "release-*"]
+  workflow_dispatch:
+  schedule:
+    - cron: "23 5 * * 1"
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: sbom-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-sbom:
+    name: Generate source SBOMs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Create SBOM output directory
+        run: mkdir -p sbom
+
+      - name: Generate SPDX 2.3 JSON
+        uses: anchore/sbom-action@57aae528053a48a3f6235f2d9461b05fbcb7366d # v0.23.1
+        with:
+          path: .
+          format: spdx-json
+          output-file: sbom/netbird.spdx.json
+          upload-artifact: false
+          upload-release-assets: false
+
+      - name: Generate CycloneDX JSON
+        uses: anchore/sbom-action@57aae528053a48a3f6235f2d9461b05fbcb7366d # v0.23.1
+        with:
+          path: .
+          format: cyclonedx-json
+          output-file: sbom/netbird.cyclonedx.json
+          upload-artifact: false
+          upload-release-assets: false
+
+      - name: Upload source SBOMs
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: netbird-source-sboms-${{ github.sha }}
+          path: |
+            sbom/netbird.spdx.json
+            sbom/netbird.cyclonedx.json
+          if-no-files-found: error
+          retention-days: 90
