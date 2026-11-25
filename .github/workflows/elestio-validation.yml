@@ -1,0 +1,49 @@
+name: Elestio Deployment Validation
+
+on:
+  pull_request:
+    paths:
+      - "README.md"
+      - "elestio.md"
+      - "docs/adr/**"
+      - "scripts/validate-elestio-docs.py"
+      - ".github/workflows/elestio-validation.yml"
+      - ".github/workflows/elestio-deploy.yml"
+  push:
+    branches:
+      - main
+      - security/dependabot-sbom-governance
+    paths:
+      - "README.md"
+      - "elestio.md"
+      - "docs/adr/**"
+      - "scripts/validate-elestio-docs.py"
+      - ".github/workflows/elestio-validation.yml"
+      - ".github/workflows/elestio-deploy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: elestio-validation-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-deployment-docs:
+    name: Validate Elestio guide and workflow syntax
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Validate guide, local links and deployment safety caveats
+        run: python3 scripts/validate-elestio-docs.py
+
+      - name: Parse Elestio workflow YAML
+        run: |
+          ruby -e 'require "yaml"; ARGV.each { |path| YAML.parse_file(path); puts "valid YAML: #{path}" }' \
+            .github/workflows/elestio-validation.yml \
+            .github/workflows/elestio-deploy.yml
