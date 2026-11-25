@@ -21,6 +21,7 @@ updates:
   - package-ecosystem: "gomod"
     directories:
       - "/"
+      - "/client/internal/metrics/infra/ingest"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 20
@@ -47,7 +48,20 @@ updates:
         patterns:
           - "golang.zx2c4.com/wireguard*"
 
-  # Track Dev Container feature and image references.
+  # Track JavaScript/TypeScript dependencies in both frontend applications.
+  - package-ecosystem: "npm"
+    directories:
+      - "/client/ui/frontend"
+      - "/proxy/web"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      frontend:
+        patterns:
+          - "*"
+
+  # Track Dev Container Features; its Dockerfile is covered separately below.
   - package-ecosystem: "devcontainers"
     directory: "/"
     schedule:
@@ -59,7 +73,10 @@ updates:
     directories:
       - "/.devcontainer"
       - "/client"
+      - "/client/internal/metrics/infra/ingest"
+      - "/client/ui/build/docker"
       - "/combined"
+      - "/e2e/harness"
       - "/management"
       - "/proxy"
       - "/relay"
