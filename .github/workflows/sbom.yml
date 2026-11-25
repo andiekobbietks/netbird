@@ -47,12 +47,23 @@ jobs:
           upload-artifact: false
           upload-release-assets: false
 
-      - name: Upload source SBOMs
+      - name: Scan source SBOM for known vulnerabilities
+        uses: anchore/scan-action@11983a512817154c80a9db660c1a184be7513ed6 # v7.4.3
+        with:
+          sbom: sbom/netbird.spdx.json
+          output-format: sarif
+          output-file: sbom/grype.sarif
+          severity-cutoff: high
+          fail-build: false
+          cache-db: true
+
+      - name: Upload source SBOMs and vulnerability report
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: netbird-source-sboms-${{ github.sha }}
+          name: netbird-source-supply-chain-${{ github.sha }}
           path: |
             sbom/netbird.spdx.json
             sbom/netbird.cyclonedx.json
+            sbom/grype.sarif
           if-no-files-found: error
           retention-days: 90
