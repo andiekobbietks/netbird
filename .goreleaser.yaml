@@ -370,8 +370,10 @@ nfpms:
       summary: NetBird client
       group: Applications/Internet
       packager: NetBird <dev@netbird.io>
+      {{ if index .Env "GPG_RPM_KEY_FILE" }}
       signature:
-        key_file: '{{ if index .Env "GPG_RPM_KEY_FILE" }}{{ .Env.GPG_RPM_KEY_FILE }}{{ end }}'
+        key_file: '{{ .Env.GPG_RPM_KEY_FILE }}'
+      {{ end }}
 
   - <<: *netbird_rpm
     id: netbird_rpm_arm64
