@@ -28,6 +28,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Prepare report directory
+        run: mkdir -p reports
+
       - name: Generate CycloneDX SBOM
         uses: anchore/sbom-action@v0.20.6
         with:
