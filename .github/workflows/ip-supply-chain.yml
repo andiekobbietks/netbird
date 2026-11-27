@@ -2,7 +2,7 @@ name: IP and Open-Source Supply-Chain Evidence
 
 on:
   push:
-    branches: [main]
+    branches: ["**"]
   pull_request:
     branches: [main]
   schedule:
@@ -56,7 +56,6 @@ jobs:
       - name: Record Go module graph
         shell: bash
         run: |
-          mkdir -p reports
           go version | tee reports/go-version.txt
           go list -m -json all > reports/go-modules.json
           go mod graph > reports/go-module-graph.txt
@@ -68,17 +67,17 @@ jobs:
           go install github.com/google/go-licenses@latest
           "$(go env GOPATH)/bin/go-licenses" report ./... > reports/go-licenses.csv
 
-      - name: Set up Node and pnpm
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          package_json_file: client/ui/frontend/package.json
+
+      - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
           cache-dependency-path: client/ui/frontend/pnpm-lock.yaml
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          package_json_file: client/ui/frontend/package.json
 
       - name: Record frontend dependency tree and licences
         working-directory: client/ui/frontend
