@@ -6,7 +6,7 @@ This repository uses automated CI to collect repeatable software-composition, li
 
 ## Automated evidence
 
-The workflow `.github/workflows/ip-supply-chain.yml` runs on pushes to `main`, pull requests targeting `main`, a weekly schedule, and manual dispatch.
+The workflow `.github/workflows/ip-supply-chain.yml` runs on pushes to branches, pull requests targeting `main`, a weekly schedule, and manual dispatch.
 
 It uploads two 90-day GitHub Actions artifacts:
 
@@ -63,3 +63,4 @@ Do not describe the repository or a product built from it as wholly proprietary.
 - Syft inventories discovered components; it does not by itself prove all files or dependencies are licensed compatibly.
 - The upstream comparison fetches NetBird's current `main`, so scheduled reports can change as upstream changes. For release evidence, compare against the precise upstream base commit used by the fork.
 - GitHub Actions artifacts expire after 90 days by default in this workflow. Export release evidence to controlled, durable storage where required.
+- A branch push should create a workflow run. If it does not, check repository Actions settings and workflow-file validation; do not treat the absence of a run as a successful scan.
